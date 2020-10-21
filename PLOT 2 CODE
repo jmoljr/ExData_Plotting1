@@ -1,0 +1,26 @@
+# Read and download file
+zipUrl <- "https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2Fhousehold_power_consumption.zip"
+zipFile <- "exdata_data_household_power_consumption.zip"
+
+if (!file.exists(zipFile)) {
+  download.file(zipUrl, zipFile, mode = "wb")
+}
+
+# unzip zip file containing data if data directory doesn't already exist
+dataPath <- "household_power_consumption.txt"
+if (!file.exists(dataPath)) {
+  unzip(zipFile)
+}
+
+household_consumption <- read.table(dataPath, sep = ";", header = T, na.strings = "?")
+library(tidyr) 
+library(lubridate)
+household_consumption <- subset(household_consumption, Date == c("1/2/2007", "2/2/2007"))
+household_consumption <- unite(household_consumption, Date, Time, col = "Time", sep = " ")
+# Convert first column characters to date
+household_consumption[1] <- dmy_hms(household_consumption$Time)
+
+#Plot the thing
+png("plot2.png", height = 480, width = 480)
+plot(household_consumption$Time, household_consumption$Global_active_power, type = "l", ylab = "Global Active Power(kilowatts)", xlab = "")
+dev.off()
