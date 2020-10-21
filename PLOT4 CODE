@@ -1,0 +1,53 @@
+dev.off()
+
+# Read and download file
+zipUrl <- "https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2Fhousehold_power_consumption.zip"
+zipFile <- "exdata_data_household_power_consumption.zip"
+
+if (!file.exists(zipFile)) {
+  download.file(zipUrl, zipFile, mode = "wb")
+}
+
+# unzip zip file containing data if data directory doesn't already exist
+dataPath <- "household_power_consumption.txt"
+if (!file.exists(dataPath)) {
+  unzip(zipFile)
+}
+
+# Plot Voltage * Date
+household_consumption <- read.table(dataPath, sep = ";", header = T, na.strings = "?")
+
+# Convert first column characters to date
+##household_consumption[1] <- as.Date(household_consumption$Date, tryFormats = "%d/%m/%Y")
+# Subset the file to work just with the required dateshist(hc$Global_active_power, main = "Global Active Power", col = "red", xlab = "Global Active Power(kilowatts)", ylab = "Frequency", xaxp= c(0,6,3), yaxp = c(0,600,6))
+library(tidyr) 
+library(lubridate)
+household_consumption <- subset(household_consumption, Date == c("1/2/2007", "2/2/2007"))
+household_consumption <- unite(household_consumption, Date, Time, col = "Time", sep = " ")
+# Convert first column characters to date
+household_consumption[1] <- dmy_hms(household_consumption$Time)
+household_consumption[1] <- as.Date(household_consumption[1])
+png("plot4.png", height = 480, width = 480)
+par(mfrow =c(2,2), mar = c(4,5,4,5), oma = (0) )
+#Plot 1
+plot(household_consumption$Time, household_consumption$Global_active_power, type = "l", ylab = "Global Active Power", xlab = "")
+
+
+#Plot 2
+
+
+plot( y=household_consumption$Voltage, x=household_consumption$Time , xlab = "Datetime", ylab = "Voltage",   type = "l")
+
+# Plot 3
+
+plot(household_consumption$Time, household_consumption$Sub_metering_1, type = "l", ylab = "Energy Sub Metering", xlab = "", col="black")
+lines(household_consumption$Time, household_consumption$Sub_metering_2, col = "red")
+lines(household_consumption$Time, household_consumption$Sub_metering_3, col = "blue")
+legend("topright",c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3"),cex=.7,col=c("black","red","blue"), pch = "l", bty="n")
+
+
+#Plot 4
+
+plot(y=household_consumption$Global_reactive_power , x=household_consumption$Time , xlab = "Datetime", ylab = "Global_Reactive_Power", xaxp= c(0,6,3),  type = "l")
+
+dev.off()
